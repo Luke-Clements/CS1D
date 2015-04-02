@@ -36,16 +36,16 @@ public:
 	quadNode<dt>*	 AddData(	int key, dt data);
 	void	         RemoveData(int key);
 	dat<dt>*         GetData(	int key);
+	quadNode<dt>*    GetHead();
 
 private:
-	bool operator!=(const quadNode<dt>& node);
 	bool CoinToss();
 
 	void addNewLevel();
 	void removeTopLevel();
 
 	quadNode<dt>* addToLevel(quadNode<dt>* levelB, quadNode<dt>* levelE, quadNode<dt>* addNode);
-	void removeFromLevel(quadNode<dt>* levelB, quadNode<dt>* levelE, quadNode<dt>* base, quadNode<dt>* begin);
+	void removeFromLevel(quadNode<dt>* levelB, quadNode<dt>* levelE, quadNode<dt>* begin);
 	
 	int maxKeyVal = std::numeric_limits<int>::max();
 	int minKeyVal = std::numeric_limits<int>::min();
@@ -107,19 +107,6 @@ SkipList<dt>::~SkipList()
 }
 
 template <class dt>
-bool SkipList<dt>::operator!=(const quadNode<dt>& node)
-{
-	if (this->GetData().key != node.data.key)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-template <class dt>
 bool SkipList<dt>::CoinToss()
 {
 	if (rand() % 2 == 0)
@@ -138,58 +125,32 @@ quadNode<dt>* SkipList<dt>::addToLevel(quadNode<dt>* levelB, quadNode<dt>* level
 	quadNode<dt>* levelPtr = levelB;
 	quadNode<dt>* newNode = new quadNode<dt>;
 
-	cout << "bacon" << endl;
 	while (levelPtr->next->data.key != levelE->data.key && levelPtr->next->data.key < addNode->data.key)
 	{
 		levelPtr = levelPtr->next;
 	}
 
-	newNode->prev = levelPtr;
-	newNode->next = levelPtr->next;
-	
-	if (&levelB != &headhead)
+	if (levelPtr->next->data.key == addNode->data.key && levelPtr->next->data.data > addNode->data.data)
 	{
-		newNode->down = addNode;
+		levelPtr = levelPtr->next;
 	}
-	else
-	{
-		newNode->down = (quadNode<dt>*)NULL;
-	}
-	
-	levelPtr->next = newNode;
-	newNode->next->prev = newNode;
+	addNode->prev = levelPtr;
+	addNode->next = levelPtr->next;
+	levelPtr->next = addNode;
+	addNode->next->prev = addNode;
 
 	if (CoinToss())
 	{
 		if (levelB->up == headtail)
 		{
-			cout << "here" << endl;
-			quadNode<dt>* tempHead = new quadNode<dt>;
-			quadNode<dt>* tempTail = new quadNode<dt>;
-
-			tempHead->data.key = minKeyVal;
-			tempTail->data.key = maxKeyVal;
-
-			tempHead->up = headtail;
-			tempHead->down = levelB;
-			headtail->down = tempHead;
-
-			tempTail->up = tailtail;
-			tempHead->down = levelE;
-			tailtail->down = tempTail;
-
-			tempHead->next = tempTail;
-			tempTail->prev = tempHead;
-
-			newNode->up = addToLevel(tempHead, tempTail, addNode);
-		}
-		else
-		{
-			cout << "here2" << endl;
-			newNode->up = addToLevel(levelB->up, levelE->up, addNode);
-		}		
+			addNewLevel();
+		}	
+		newNode->data.data = addNode->data.data;
+		newNode->data.key = addNode->data.key;
+		newNode->down = addNode;
+		addNode->up = addToLevel(levelB->up, levelE->up, newNode);
 	}
-	return newNode;
+	return addNode;
 }
 
 template <class dt>
@@ -208,43 +169,27 @@ quadNode<dt>* SkipList<dt>::AddData(int key, dt data)
 		headhead->next = newNode;
 		tailtail->prev = newNode;
 
-		cout << "herebefore" << endl;
 		if (CoinToss())
 		{
 			quadNode<dt>* upNewNode = new quadNode<dt>;
-			quadNode<dt>* tempHead = new quadNode<dt>;
-			quadNode<dt>* tempTail = new quadNode<dt>;
-
-			tempHead->data.key = minKeyVal;
-			tempTail->data.key = maxKeyVal;
-
-			tempHead->up = headtail;
-			tempHead->down = headhead;
-			headhead->up = tempHead;
-			headtail->down = tempHead;
-
-			tempTail->up = tailtail;
-			tempHead->down = tailhead;
-			tailhead->up = tempTail;
-			tailtail->down = tempTail;
-
-			tempHead->next = tempTail;
-			tempTail->prev = tempHead;
 
 			upNewNode->down = newNode;
 			
 			addNewLevel();
 
-			cout << "gothere" << endl;
-			newNode->up = addToLevel(tempHead, tempTail, newNode);
+			newNode->up = addToLevel(headhead->up, tailtail->up, newNode);
 		}
 	}
 	else
 	{
-		cout << "herebefore2" << endl;
 		quadNode<dt>* levelPtr = headhead;
 
-		while (levelPtr->data.key < newNode->data.key && levelPtr->next->data.key != maxKeyVal && levelPtr->next != NULL)
+		while (levelPtr->next->data.key < newNode->data.key && levelPtr->next->data.key != maxKeyVal)
+		{
+			levelPtr = levelPtr->next;
+		}
+
+		while(levelPtr->next->data.key == newNode->data.key && levelPtr->next->data.data < newNode->data.data)
 		{
 			levelPtr = levelPtr->next;
 		}
@@ -276,16 +221,16 @@ quadNode<dt>* SkipList<dt>::AddData(int key, dt data)
 }
 
 template <class dt>
-void SkipList<dt>::removeFromLevel(quadNode<dt>* levelB, quadNode<dt>* levelE, quadNode<dt>* base, quadNode<dt>* begin)
+void SkipList<dt>::removeFromLevel(quadNode<dt>* levelB, quadNode<dt>* levelE, quadNode<dt>* begin)
 {
-	if (begin != base)
+	if (begin->down != NULL)
 	{
 		begin->next->prev = begin->prev;
 		begin->prev->next = begin->next;
 		begin->next = NULL;
 		begin->prev = NULL;
 
-		removeFromLevel(levelB->down, levelE->down, base, begin->down);
+		removeFromLevel(levelB->down, levelE->down, begin->down);
 		delete begin;
 	}
 
@@ -312,13 +257,14 @@ void SkipList<dt>::RemoveData(int key)
 		topRemove = topRemove->up;
 	}
 
-	removeFromLevel(headtail->down, tailtail->down, removeNode, topRemove);
+	removeFromLevel(headtail->down, tailtail->down, topRemove);
 
 	removeNode->next->prev = removeNode->prev;
 	removeNode->prev->next = removeNode->next;
 	removeNode->next = NULL;
 	removeNode->prev = NULL;
 	delete removeNode;
+	elements--;
 }
 
 template <class dt>
@@ -326,16 +272,31 @@ dat<dt>* SkipList<dt>::GetData(int key)
 {
 	quadNode<dt>* dataNode = new quadNode<dt>;
 
-	dataNode = headhead;
+	dataNode = headtail;
+	dataNode = dataNode->down;
 
-	while (dataNode->data.key < key && dataNode->next != NULL)
+	while (dataNode->down != NULL || dataNode->data.key < maxKeyVal)
 	{
-		dataNode = dataNode->next;
-	}
-		
-	if (dataNode->data.key == key)
-	{
-		return &dataNode->data;
+
+		if (dataNode->next->data.key == key)
+		{
+			return &dataNode->next->data;
+		}
+		else if (dataNode->next->data.key < key)
+		{
+			dataNode = dataNode->next;
+		}
+		else
+		{
+			if (dataNode->down == NULL)
+			{
+				return (dat<dt>*)NULL;
+			}
+			else
+			{
+				dataNode = dataNode->down;
+			}
+		}
 	}
 
 	return (dat<dt>*)NULL;
@@ -344,7 +305,6 @@ dat<dt>* SkipList<dt>::GetData(int key)
 template <class dt>
 void SkipList<dt>::addNewLevel()
 {
-	cout << "add new level" << endl;
 	quadNode<dt>* beginNode = new quadNode < dt > ;
 	quadNode<dt>* endNode = new quadNode < dt > ;
 
@@ -381,4 +341,10 @@ void SkipList<dt>::removeTopLevel()
 	tempNode->up = NULL;
 	tempNode->down = NULL;
 	delete tempNode;
+}
+
+template <class dt>
+quadNode<dt>*  SkipList<dt>::GetHead()
+{
+	return headhead;
 }

@@ -1,0 +1,42 @@
+Creating List:
+
+Adding: Laguna Niguel
+Adding: Mission Viejo
+Adding: Lake Forest
+Adding: Irvine
+Adding: San Clemente
+Adding: San Diego
+Adding: Anaheim
+Removing key 22...
+Adding: Los Angeles
+Adding: Orange
+Adding: Palm Springs
+Adding: Riverside
+Removing key 49...
+Adding: Brea
+Adding: Santa Ana
+Adding: Tustin
+Adding: Oceanside
+Adding: La Jolla
+Adding: Del Mar
+Adding: Aliso Viejo
+Adding: Laguna Beach
+
+
+Printing entire list:
+La Jolla: 11
+Orange: 17
+Del Mar: 18
+Laguna Niguel: 18
+Mission Viejo: 18
+Brea: 19
+Aliso Viejo: 22
+Riverside: 26
+Palm Springs: 32
+San Diego: 32
+Tustin: 35
+Irvine: 44
+San Clemente: 44
+Laguna Beach: 49
+Oceanside: 52
+Santa Ana: 60
